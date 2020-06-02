@@ -42,27 +42,27 @@ struct rsuInfo_t{
 
 struct obuInfo_t{
 
-	int32_t  OBULatitude;
-	int32_t  OBULongitude;
-	double   OBUSpeed;
-	double   OBUHeading;
+	int32_t  obuLatitude;
+	int32_t  obuLongitude;
+	double   obuSpeed;
+	double   obuHeading;
 };
 
-struct PAR_Packet_t{
+struct parPacket_t{
 
 	int rsuID;//prcsWSM으로부터 받은 RSU_ID
-	int32_t RLatitude; //prcsWSM으로부터 받은 위도 int32_t int; 4Byte
-	int32_t RLongitude;//prcsWSM으로부터 받은 경도
-	int16_t rxpower; //prcsWSM으로부터 받은 RXPOWER int16_t short int 2Byte
+	int32_t rsuLatitude; //prcsWSM으로부터 받은 위도 int32_t int; 4Byte
+	int32_t rsuLongitude;//prcsWSM으로부터 받은 경도
+	int16_t rxPower; //prcsWSM으로부터 받은 RXPOWER int16_t short int 2Byte
 	uint8_t rcpi; // prcsWSM으로부터 받은 rcpi uint8_t unsigned char 1Byte
 
 };
 
-struct PAR_Info_t{
+struct parInfo_t{
 	uint32_t check;// 이벤트 번호
 	int rsuID;//prcsWSM으로부터 받은 RSU_ID
-	int32_t RLatitude; //prcsWSM으로부터 받은 위도 int32_t int; 4Byte
-	int32_t RLongitude;//prcsWSM으로부터 받은 경도
+	int32_t rsuLatitude; //prcsWSM으로부터 받은 위도 int32_t int; 4Byte
+	int32_t rsuLongitude;//prcsWSM으로부터 받은 경도
 	int16_t rxpower; //prcsWSM으로부터 받은 RXPOWER int16_t short int 2Byte
 	uint8_t rcpi; // prcsWSM으로부터 받은 rcpi uint8_t unsigned char 1Byte
 	int32_t obuLatitude; //OBU 위도
@@ -76,7 +76,7 @@ struct PAR_Info_t{
 	uint32_t curPAR; //현재 PAR
 };
 
-struct PAR_MIB
+struct parMib
 {
 
 	/* 동작변수 */
@@ -111,10 +111,10 @@ struct PAR_MIB
  */
 extern struct rsuInfo_t g_rsu;
 extern struct obuInfo_t g_obu;
-extern struct PAR_MIB g_mib;
-extern struct PAR_Packet_t g_Packet;
+extern struct parMib g_mib;
+extern struct parPacket_t g_Packet;
 //extern struct PAR_Info_t stPARInfo[RSU_SLOT];
-extern struct PAR_Info_t *stPARInfo;
+extern struct parInfo_t *stPARInfo;
 extern int ending;
 extern bool shmCheck;
 extern pthread_t rx_thread;

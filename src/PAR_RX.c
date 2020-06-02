@@ -30,7 +30,7 @@ int par_InitRXoperation(){
 
 	int32_t ret;
 	
-	stPARInfo = malloc(sizeof(struct PAR_Info_t) * g_mib.rsuNum);//구조체 동적할당
+	stPARInfo = malloc(sizeof(struct parInfo_t) * g_mib.rsuNum);//구조체 동적할당
 	//int size = sizeof(struct PAR_Info_t);
 	//size_t msizeNUM = malloc_usable_size(stPARInfo);
 	//printf("size : %d, msize : %d\n",size, msizeNUM);
@@ -125,8 +125,8 @@ void par_RXoperation(){
 
 		if( g_mib.Latitude != 0 && g_mib.Longitude != 0)
 		{
-			g_obu.OBULatitude = g_mib.Latitude;
-			g_obu.OBULongitude = g_mib.Longitude;
+			g_obu.obuLatitude = g_mib.Latitude;
+			g_obu.obuLongitude = g_mib.Longitude;
 			//printf("OBULati : %d   OBULongi : %d \n",g_obu.OBULatitude, g_obu.OBULongitude);
 			syslog(LOG_INFO | LOG_LOCAL2,"Success INPUT LATI and LONGI\n");
 #if 0 /* dbg 1 or 0 */
@@ -143,10 +143,10 @@ void par_RXoperation(){
 			{
 				//printf("[PAR_RX] GPSData.set Success\n");
 				//syslog(LOG_INFO | LOG_LOCAL2,"[PAR_RX] GPSData.set Success\n");
-				g_obu.OBULatitude = (int) pow(10,7)*gpsData.fix.latitude;
-				g_obu.OBULongitude = (int) pow(10,7)*gpsData.fix.longitude;
-				g_obu.OBUSpeed = gpsData.fix.speed;
-				g_obu.OBUHeading = gpsData.fix.track;
+				g_obu.obuLatitude = (int) pow(10,7)*gpsData.fix.latitude;
+				g_obu.obuLongitude = (int) pow(10,7)*gpsData.fix.longitude;
+				g_obu.obuSpeed = gpsData.fix.speed;
+				g_obu.obuHeading = gpsData.fix.track;
 				//printf("OBULatitude : %d  OBULongitude : %d OBUSpeed : %f OBUHeading : %f \n", g_obu.OBULatitude, g_obu.OBULongitude, g_obu.OBUSpeed, g_obu.OBUHeading);
 #if 0 /* dbg 1 or 0 */
 				if(g_mib.dbg)
@@ -159,10 +159,10 @@ void par_RXoperation(){
 			else {
 				//printf("GPS Invalid\n");
 				syslog(LOG_INFO | LOG_LOCAL2, "[PAR_RX] GPS Invalid\n");
-				g_obu.OBULatitude = 900000001;
-				g_obu.OBULongitude = 1800000001;
-				g_obu.OBUSpeed = 8191;
-				g_obu.OBUHeading = 28800;
+				g_obu.obuLatitude = 900000001;
+				g_obu.obuLongitude = 1800000001;
+				g_obu.obuSpeed = 8191;
+				g_obu.obuHeading = 28800;
 				//printf("OBULatitude : %d  OBULongitude : %d OBUSpeed : %f OBUHeading : %f \n",g_obu.OBULatitude, g_obu.OBULongitude, g_obu.OBUSpeed, g_obu.OBUHeading);
 #if 0 /* dbg 1 or 0 */
 				if(g_mib.dbg)
@@ -185,15 +185,15 @@ void par_RXoperation(){
 			{
 				stPARInfo[g_Packet.rsuID].check =1;
 				stPARInfo[g_Packet.rsuID].rsuID = g_Packet.rsuID;
-				stPARInfo[g_Packet.rsuID].RLongitude = g_Packet.RLongitude;
-				stPARInfo[g_Packet.rsuID].RLatitude = g_Packet.RLatitude;
-				stPARInfo[g_Packet.rsuID].obuSpeed = g_obu.OBUSpeed;
-				stPARInfo[g_Packet.rsuID].obuHeading = g_obu.OBUHeading;
+				stPARInfo[g_Packet.rsuID].rsuLongitude = g_Packet.rsuLongitude;
+				stPARInfo[g_Packet.rsuID].rsuLatitude = g_Packet.rsuLatitude;
+				stPARInfo[g_Packet.rsuID].obuSpeed = g_obu.obuSpeed;
+				stPARInfo[g_Packet.rsuID].obuHeading = g_obu.obuHeading;
 				stPARInfo[g_Packet.rsuID].interval = g_mib.cycle;
-				stPARInfo[g_Packet.rsuID].rxpower = g_Packet.rxpower;
+				stPARInfo[g_Packet.rsuID].rxpower = g_Packet.rxPower;
 				stPARInfo[g_Packet.rsuID].rcpi = g_Packet.rcpi;
-				stPARInfo[g_Packet.rsuID].obuLongitude = g_obu.OBULongitude;
-				stPARInfo[g_Packet.rsuID].obuLatitude = g_obu.OBULatitude;
+				stPARInfo[g_Packet.rsuID].obuLongitude = g_obu.obuLongitude;
+				stPARInfo[g_Packet.rsuID].obuLatitude = g_obu.obuLatitude;
 				stPARInfo[g_Packet.rsuID].cnt++;
 
 				//printf("stPARInfo[CNT] : %d \n\n\n",stPARInfo[g_Packet.rsuID].cnt);
@@ -272,7 +272,7 @@ void par_Report(void){
 				continue;
 			}
 
-			stPARInfo[idx].distance = ldCaldistance(stPARInfo[idx].RLongitude, stPARInfo[idx].RLatitude, stPARInfo[idx].obuLongitude, stPARInfo[idx].obuLatitude);
+			stPARInfo[idx].distance = ldCaldistance(stPARInfo[idx].rsuLongitude, stPARInfo[idx].rsuLatitude, stPARInfo[idx].obuLongitude, stPARInfo[idx].obuLatitude);
 
 			cnt[idx]=stPARInfo[idx].cnt;
 			stPARInfo[idx].cnt =0;
@@ -295,8 +295,8 @@ void par_Report(void){
 				syslog(LOG_INFO | LOG_LOCAL2, "CHECK : %u, RSUID : %d, RSU Latitude : %d, RSU Longitude : %d, OBU Latitude : %d, OBU Longitude : %d\n", 
 						stPARInfo[idx].check,
 						stPARInfo[idx].rsuID,
-						stPARInfo[idx].RLatitude,
-						stPARInfo[idx].RLongitude,
+						stPARInfo[idx].rsuLatitude,
+						stPARInfo[idx].rsuLongitude,
 						stPARInfo[idx].obuLatitude,
 						stPARInfo[idx].obuLongitude);
 
@@ -314,8 +314,8 @@ void par_Report(void){
 			printf("CHECK : %u, RSUID : %d, RSU Latitude : %d, RSU Longitude : %d, OBU Latitude : %d, OBU Longitude : %d,  RXPOWER : %d, rcpi : %d, distance : %.0f, OBUSpeed : %3.2f, OBUHeading : %3.2f, CNT : %u, PAR : %d\n",
 					stPARInfo[idx].check,
 					stPARInfo[idx].rsuID,
-					stPARInfo[idx].RLatitude,
-					stPARInfo[idx].RLongitude,
+					stPARInfo[idx].rsuLatitude,
+					stPARInfo[idx].rsuLongitude,
 					stPARInfo[idx].obuLatitude,
 					stPARInfo[idx].obuLongitude,
 					stPARInfo[idx].rxpower,

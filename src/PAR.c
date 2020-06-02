@@ -17,11 +17,11 @@
 #define BUFFSIZE 1024
 struct rsuInfo_t g_rsu; //rsu ID, 위도, 경도 구조체
 struct obuInfo_t g_obu; //OBU 위도 ,경도, 스피드, 헤딩 구조체
-struct PAR_MIB g_mib; //< 어플리케이션 관리정보
+struct parMib g_mib; //< 어플리케이션 관리정보
 struct gps_data_t gpsData; //gpsd 구조체
-struct PAR_Packet_t g_Packet;//prcsWSM으로부터 받은 정보 담을 구조체
+struct parPacket_t g_Packet;//prcsWSM으로부터 받은 정보 담을 구조체
 //struct PAR_Info_t stPARInfo[RSU_SLOT];
-struct PAR_Info_t *stPARInfo;
+struct parInfo_t *stPARInfo; //통신성능측정프로그램에 필요한 정보를 가지고 있는 구조체
 int ending = 0;
 bool shmCheck = false; //gpsd shm Check;
 pthread_t rx_thread;
@@ -39,11 +39,10 @@ int main(int argc, char *argv[]){
 	printf("Running PAR application..\n");
 
 	/* 메모리 초기화 */
-	memset(&g_mib, 0, sizeof(struct PAR_MIB));
+	memset(&g_mib, 0, sizeof(struct parMib));
 	memset(&g_rsu, 0, sizeof(struct rsuInfo_t));
 	memset(&g_obu, 0, sizeof(struct obuInfo_t));
-	memset(&g_Packet, 0, sizeof(struct PAR_Packet_t));
-	//memset(&stPARInfo,0,sizeof(struct PAR_Info_t));
+	memset(&g_Packet, 0, sizeof(struct parPacket_t));
 	
 
 	/* 사용자가 입력한 파라미터들을 MIB에 저장한다. */
