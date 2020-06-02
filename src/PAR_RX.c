@@ -91,10 +91,10 @@ void par_RXoperation(){
 
 	int32_t ret;
 	uint32_t len;
-	uint8_t outbuf[BUFSIZE];
+	uint8_t outBuf[BUFSIZE];
 	int status;
 
-	memset(outbuf, 0, BUFSIZE);
+	memset(outBuf, 0, BUFSIZE);
 
 	while(!ending){
 
@@ -174,13 +174,13 @@ void par_RXoperation(){
 
 		}
 
-		len = recvMQ(outbuf);
+		len = recvMQ(outBuf);
 		if(len<0)
 			continue;
 
 		else if(len >0)
 		{
-			memcpy(&g_Packet,outbuf,len);
+			memcpy(&g_Packet,outBuf,len);
 			if(g_Packet.rsuID >0 && g_Packet.rsuID <=g_mib.rsuNum)
 			{
 				stPARInfo[g_Packet.rsuID].check =1;

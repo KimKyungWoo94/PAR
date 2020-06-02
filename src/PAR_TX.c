@@ -64,11 +64,11 @@ int par_InitTXoperation(){
 void par_TXoperation()
 {
 	int32_t ret;
-	uint8_t outbuf[BUFSIZE];
+	uint8_t outBuf[BUFSIZE];
 	uint32_t len;
 	int status;
 
-	memset(outbuf, 0, BUFSIZE);
+	memset(outBuf, 0, BUFSIZE);
 
 	while(!ending)
 	{
@@ -78,11 +78,11 @@ void par_TXoperation()
 		pthread_cond_wait(&g_mib.txCond, &g_mib.txMtx);
 		pthread_mutex_unlock(&g_mib.txMtx);
 
-		memcpy(outbuf,&g_rsu,sizeof(struct rsuInfo_t));
+		memcpy(outBuf,&g_rsu,sizeof(struct rsuInfo_t));
 		len = sizeof(struct rsuInfo_t);
 
-		sendMQ(&outbuf,len);
-		memset(outbuf, 0, sizeof(outbuf));
+		sendMQ(&outBuf,len);
+		memset(outBuf, 0, sizeof(outBuf));
 	}
 
 	/* GPSD 쓰레드 종료 */
