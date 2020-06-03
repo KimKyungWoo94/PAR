@@ -5,7 +5,7 @@ static void TxTimerExpired(union sigval arg);
 
 
 /**
- * WSM 송신타이머를 초기화한다.
+ * PAR 송신타이머를 초기화한다.
  *
  * @param interval  송신주기(usec)
  * @return          성공 시 0, 실패 시 -1
@@ -19,7 +19,7 @@ int InitTxTimer(const uint32_t interval)
 	printf("Initializing tx timer - interval: %uusec\n", interval);
 
 	/*
-	 * 송신타이머 만기 시 송신타이머쓰레드(V2X_WSM_TxTimerThread)가 생성되도록 설정한다.
+	 * 송신타이머 만기 시 송신타이머쓰레드(TxThread)가 생성되도록 설정한다.
 	 */
 	se.sigev_notify = SIGEV_THREAD;
 	se.sigev_value.sival_ptr = &g_mib.timer;
