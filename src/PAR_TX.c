@@ -10,7 +10,9 @@
 #include <signal.h>
 #include <PAR.h>
 
-/* 함수원형 */
+/****************************************************************************************
+    함수원형
+****************************************************************************************/
 int par_InitTXoperation();
 void par_TXoperation();
 static void* gpsdThread(void *notused);
@@ -26,6 +28,7 @@ int par_InitTXoperation(){
 	int32_t ret;
 	int status;
 
+	/* 주기 인자값으로 안받았을 경우 */
 	if(g_mib.interval ==0)
 	{
 		g_mib.interval = 10000;/* 송신주기 usec -> 0.1초  10000usec : 10msec : 1초에 100번 10msec은 0.01초 */
@@ -78,10 +81,14 @@ void par_TXoperation()
 		pthread_cond_wait(&g_mib.txCond, &g_mib.txMtx);
 		pthread_mutex_unlock(&g_mib.txMtx);
 
+		/*RSU 정보 버퍼에 복사 */
 		memcpy(outBuf,&g_rsu,sizeof(struct rsuInfo_t));
 		len = sizeof(struct rsuInfo_t);
 
+		/* 기지국 정보 전송 */
 		sendMQ(&outBuf,len);
+
+		/* 메모리 초기화 */
 		memset(outBuf, 0, sizeof(outBuf));
 	}
 
@@ -111,11 +118,13 @@ void par_TXoperation()
  * GPSD Thread
  * GPSD를 열고 읽어서 값을 채워주는 기능
  * 인자로 위도 경도 받으면 GPSD에서 채워주지 않는다.
+ * 주기 1초
  */
 static  void* gpsdThread(void *notused){
 
 	int32_t result;
 
+	/* gps open */
 	result = gps_open(GPSD_SHARED_MEMORY, 0, &gpsData);
 	if(result <0)
 	{
@@ -150,6 +159,7 @@ static  void* gpsdThread(void *notused){
 			shmCheck = true;
 		}
 
+		/* 기지국 위도 경도 인자값으로 받음 */
 		if( g_mib.Latitude != 0 && g_mib.Longitude != 0)
 		{
 			g_rsu.rsuID = g_mib.rsuID;
@@ -165,6 +175,7 @@ static  void* gpsdThread(void *notused){
 
 		else
 		{
+			/* gpsd로 부터 받음 */
 			if(gpsData.set)
 			{
 				g_rsu.rsuID = g_mib.rsuID;
@@ -179,6 +190,7 @@ static  void* gpsdThread(void *notused){
 			}
 
 			else {
+				/* 인자 값과 gpsd로부터 받지 않음 */
 				g_rsu.rsuID = g_mib.rsuID;
 				g_rsu.rsuLatitude = 900000001;
 				g_rsu.rsuLongitude = 1800000001;
@@ -190,8 +202,13 @@ static  void* gpsdThread(void *notused){
 				}
 			}
 		}
+
 		sleep(1);
 	}
+
+	/* GPSD CLOSE */
 	gps_close(&gpsData);
+
+	/* Thread 종료 */
 	pthread_exit((void *)0);
 }

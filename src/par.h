@@ -26,20 +26,27 @@
 #define MAX_ZERO_COUNT 5
 //#define MSIZE(ptr) malloc_usable_size((void*)ptr)
 
-/* ENUM */
+/****************************************************************************************
+  ENUM
+ ****************************************************************************************/
 typedef enum
 {
 	opRX,
 	opTX,
 } op_e;
 
-/* STRUCT */
+/****************************************************************************************
+  구조체
+ ****************************************************************************************/
+
+/* RSU 정보 */
 struct rsuInfo_t{
 	int32_t rsuID;
 	int32_t rsuLatitude;
 	int32_t rsuLongitude;
 };
 
+/* OBU 정보 */
 struct obuInfo_t{
 
 	int32_t  obuLatitude;
@@ -48,6 +55,7 @@ struct obuInfo_t{
 	double   obuHeading;
 };
 
+/* prcsWSM으로부터 받은 패킷 정보 */
 struct parPacket_t{
 
 	int rsuID;//prcsWSM으로부터 받은 RSU_ID
@@ -58,6 +66,7 @@ struct parPacket_t{
 
 };
 
+/* 통신성능 측정 프로그램에 사용될 정보 */
 struct parInfo_t{
 	uint32_t check;// 이벤트 번호
 	int rsuID;//prcsWSM으로부터 받은 RSU_ID
@@ -76,6 +85,7 @@ struct parInfo_t{
 	uint32_t curPAR; //현재 PAR
 };
 
+/* 통신성능측정 프로그램에 사용될 인자 값 및 변수들 */
 struct parMib
 {
 
@@ -106,20 +116,20 @@ struct parMib
 };
 
 
-/*
- * 전역변수
- */
-extern struct rsuInfo_t g_rsu;
+/****************************************************************************************
+  전역변수
+ ****************************************************************************************/
 extern struct obuInfo_t g_obu;
 extern struct parMib g_mib;
 extern struct parPacket_t g_Packet;
-//extern struct PAR_Info_t stPARInfo[RSU_SLOT];
+//extern struct parInfo_t stPARInfo[RSU_SLOT];
 extern struct parInfo_t *stPARInfo;
 extern int ending;
 extern bool shmCheck;
 extern pthread_t rx_thread;
 extern pthread_t gpsd_thread;
 extern struct gps_data_t gpsData;
+
 /****************************************************************************************
   함수원형(지역/전역)
  ****************************************************************************************/

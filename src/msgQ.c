@@ -101,10 +101,10 @@ int recvMQ(char *pkt)
 	else
 	{
 		cnt++;
-#if 0
+#if 1
 		if (g_mib.dbg)
 		{
-			//printf("[PAR] MQ receive(len: %d)\n", recvPkt->msg.msg_len);
+			//printf("[PAR] %dth MQ receive(len: %d)\n",cnt, recvPkt->msg.msg_len);
 			syslog(LOG_INFO | LOG_LOCAL2, "[PAR] %dth MQ receive(len: %d)\n", cnt, recvPkt->msg.msg_len);
 		}
 #endif

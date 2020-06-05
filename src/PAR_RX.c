@@ -12,7 +12,10 @@
 #include <PAR.h>
 
 
-/* 함수원형 */
+
+/****************************************************************************************
+    함수원형
+****************************************************************************************/
 int par_InitRXoperation();
 void par_RXoperation();
 void par_Report(void);
@@ -30,10 +33,12 @@ int par_InitRXoperation(){
 
 	int32_t ret;
 	
-	stPARInfo = malloc(sizeof(struct parInfo_t) * g_mib.rsuNum);//구조체 동적할당
+	/* 구조체 동적할당 */
+	stPARInfo = malloc(sizeof(struct parInfo_t) * g_mib.rsuNum);
 	//int size = sizeof(struct PAR_Info_t);
 	//size_t msizeNUM = malloc_usable_size(stPARInfo);
 	//printf("size : %d, msize : %d\n",size, msizeNUM);
+	
 	if(stPARInfo ==NULL)
 	{
 		syslog(LOG_ERR | LOG_LOCAL3, "[PAR_RX] Fail malloc()\n");
@@ -80,6 +85,7 @@ int par_InitRXoperation(){
 	}
 	return 0;
 }
+
 /**
  * PAR 수신동작을 수행한다.
  * GPSD 읽기
@@ -123,6 +129,7 @@ void par_RXoperation(){
 
 		//printf("g_mib_Lati : %u  g_mib_ Longi : %u \n",g_mib.Latitude, g_mib.Longitude);
 
+		/* 차량 위도 경도 인자값으로 받음 */
 		if( g_mib.Latitude != 0 && g_mib.Longitude != 0)
 		{
 			g_obu.obuLatitude = g_mib.Latitude;
@@ -139,10 +146,11 @@ void par_RXoperation(){
 
 		else
 		{
+			/* gpsd로 부터 받음 */
 			if(gpsData.set)
 			{
 				//printf("[PAR_RX] GPSData.set Success\n");
-				//syslog(LOG_INFO | LOG_LOCAL2,"[PAR_RX] GPSData.set Success\n");
+				syslog(LOG_INFO | LOG_LOCAL2,"[PAR_RX] GPSData.set Success\n");
 				g_obu.obuLatitude = (int) pow(10,7)*gpsData.fix.latitude;
 				g_obu.obuLongitude = (int) pow(10,7)*gpsData.fix.longitude;
 				g_obu.obuSpeed = gpsData.fix.speed;
@@ -157,6 +165,7 @@ void par_RXoperation(){
 			}
 
 			else {
+				/* 인자 값과 gpsd로부터 받지 않음 */
 				//printf("GPS Invalid\n");
 				syslog(LOG_INFO | LOG_LOCAL2, "[PAR_RX] GPS Invalid\n");
 				g_obu.obuLatitude = 900000001;
@@ -174,14 +183,16 @@ void par_RXoperation(){
 
 		}
 
+		/* 기지국 정보 수신 */
 		len = recvMQ(outBuf);
 		if(len<0)
 			continue;
 
+		/* 통신성능 측정프로그램에 필요한 정보 저장 */
 		else if(len >0)
 		{
 			memcpy(&g_Packet,outBuf,len);
-			if(g_Packet.rsuID >0 && g_Packet.rsuID <=g_mib.rsuNum)
+			if(g_Packet.rsuID >0 && g_Packet.rsuID <= g_mib.rsuNum)
 			{
 				stPARInfo[g_Packet.rsuID].check =1;
 				stPARInfo[g_Packet.rsuID].rsuID = g_Packet.rsuID;
@@ -208,7 +219,10 @@ void par_RXoperation(){
 		}
 
 	}
+
+	/* 동적할당 해제 */
 	free(stPARInfo);
+
 	/* RX쓰레드 종료 */
 	ret = pthread_join(rx_thread, (void **)status);
 	if( ret == 0 )
@@ -229,6 +243,7 @@ void par_RXoperation(){
 	pthread_mutex_destroy(&g_mib.txMtx);
 	pthread_cond_destroy(&g_mib.txCond);
 }
+
 /**
  * 해당 각 기지국에 대하여 거리계산
  * 및 
@@ -245,6 +260,7 @@ void par_Report(void){
 	//printf("[PAR_INFO] Running Timer \n");
 	//syslog(LOG_INFO | LOG_LOCAL0,"[PAR_INFO] Running Timer \n");
 
+	/* RSU 갯수 만큼 반복 */
 	for(idx=0;idx<=g_mib.rsuNum;idx++)
 	{
 		//패킷 카운트버퍼 초기화
@@ -253,6 +269,7 @@ void par_Report(void){
 		stPARInfo[idx].curPAR = 0;
 		stPARInfo[idx].maxPAR = 0;
 
+		/* RSUID 일치 여부 */
 		if(stPARInfo[idx].rsuID >0 && stPARInfo[idx].rsuID <= g_mib.rsuNum)
 		{
 			//기존 들어오던 기지국 정보가 수신되지 않기 시작함
@@ -272,9 +289,13 @@ void par_Report(void){
 				continue;
 			}
 
+			/* 거리 계산 */
 			stPARInfo[idx].distance = ldCaldistance(stPARInfo[idx].rsuLongitude, stPARInfo[idx].rsuLatitude, stPARInfo[idx].obuLongitude, stPARInfo[idx].obuLatitude);
 
+			/* 해당 기지국 받은 CNT 갯수 저장 */
 			cnt[idx]=stPARInfo[idx].cnt;
+
+			/* 해당 기지국 CNT 초기화 */
 			stPARInfo[idx].cnt =0;
 
 			// 현재 측정지점에서 최대 PAR 갱신
@@ -284,9 +305,10 @@ void par_Report(void){
 
 #if 1 /* Syslog or Printf */
 
+			/* 현재 PAR 계산 */
 			stPARInfo[idx].curPAR = (cnt[idx]*100)/(1000/stPARInfo[idx].interval);
 			
-			//PAR최대값 계산
+			/* PAR최대값 계산 */
 			if(stPARInfo[idx].curPAR > stPARInfo[idx].maxPAR)
 				stPARInfo[idx].maxPAR = stPARInfo[idx].curPAR;
 			
@@ -324,7 +346,7 @@ void par_Report(void){
 					(double)stPARInfo[idx].obuSpeed,
 					(double)stPARInfo[idx].obuHeading,
 					cnt[idx],
-					maxPAR);
+					stPARInfo[idx].maxPAR);
 #endif
 		}
 
@@ -368,5 +390,6 @@ static  void* rxThread(void *notused){
 		par_Report();
 	}
 
+	/* Thread 종료 */
 	pthread_exit((void *)0);
 }
